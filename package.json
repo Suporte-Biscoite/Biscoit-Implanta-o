@@ -1,0 +1,47 @@
+{
+  "name": "biscoite-implantacao",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "migrate": "node scripts/migrate.mjs",
+    "test": "vitest run",
+    "sheets:headers": "node scripts/sheets-headers.mjs",
+    "make-template": "node scripts/make-template.mjs",
+    "scan:secrets": "node scripts/scan-secrets.mjs",
+    "test:security": "node scripts/security-test.mjs",
+    "test:restore": "bash scripts/restore-test.sh",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "google-auth-library": "^10.9.1",
+    "jszip": "^3.10.1",
+    "next": "15.5.27",
+    "openid-client": "^5.7.0",
+    "pg": "^8.13.1",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "typescript": "^5.6.3",
+    "vitest": "4.1.11"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "postcss": "8.5.29"
+  }
+}

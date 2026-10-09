@@ -1,0 +1,54 @@
+name: CI
+on: [push, pull_request]
+permissions: { contents: read }
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: ci_only, POSTGRES_DB: implantacao }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Varredura de segredos (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Varredura de segredos e dados pessoais (regras do projeto)
+        run: npm run scan:secrets
+      - name: Dependências vulneráveis (falha em high/critical)
+        run: npm audit --audit-level=high
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build
+        run: npm run build
+      - name: Banco de teste + papéis de menor privilégio
+        env: { PGPASSWORD: ci_only }
+        run: |
+          psql -h localhost -U postgres -c "CREATE ROLE dono LOGIN PASSWORD 'dono_ci'" -c "ALTER DATABASE implantacao OWNER TO dono"
+          psql -h localhost -U postgres -d implantacao -c "ALTER SCHEMA public OWNER TO dono"
+          DATABASE_URL=postgres://dono:dono_ci@localhost:5432/implantacao node scripts/migrate.mjs
+          psql -h localhost -U postgres -d implantacao -v senha_app=app_ci -f docs/db-roles.sql
+      - name: Testes de segurança de ponta a ponta (modo produção)
+        run: |
+          export FIELD_ENCRYPTION_KEYS="v1=$(openssl rand -base64 32)" APP_URL=http://localhost:3000 ALLOWED_DOMAIN=exemplo.com.br \
+                 DATABASE_URL=postgres://app_implantacao:app_ci@localhost:5432/implantacao NODE_ENV=production RATE_LIMIT_API=5000 \
+                 DEV_LOGIN_ENABLED=true GOOGLE_CLIENT_ID=x GOOGLE_CLIENT_SECRET=x
+          npx next start -p 3000 & sleep 8
+          BASE_URL=http://localhost:3000 TEST_DB_URL=postgres://dono:dono_ci@localhost:5432/implantacao \
+          TEST_APP_DB_URL=postgres://app_implantacao:app_ci@localhost:5432/implantacao node scripts/security-test.mjs
+      - name: Teste de restauração de backup
+        env: { PGPASSWORD: ci_only }
+        run: |
+          export GNUPGHOME=$(mktemp -d); gpg --batch --passphrase '' --quick-gen-key ci@exemplo.com.br rsa3072 encrypt 1d
+          psql -h localhost -U postgres -c "CREATE DATABASE implantacao_restore OWNER dono"
+          BACKUP_DATABASE_URL=postgres://dono:dono_ci@localhost:5432/implantacao \
+          RESTORE_DATABASE_URL=postgres://dono:dono_ci@localhost:5432/implantacao_restore \
+          BACKUP_GPG_RECIPIENT=ci@exemplo.com.br bash scripts/restore-test.sh
