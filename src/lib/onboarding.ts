@@ -8,7 +8,8 @@ import path from "node:path";
 import JSZip from "jszip";
 import { fluxoDe, type DadosLoja, type Loja, type Segredos } from "./domain";
 import type { AppConfig, CscSet } from "./config";
-import { cleanText, formatCEP, formatCNPJ, normalizeRegime } from "./validators";
+import { cleanText, formatCEP, formatCNPJ, isValidEmail, normalizeRegime } from "./validators";
+import { LISTAS, casarComLista } from "./listas-nexaas";
 
 export const COLUNAS = [
   "Razão Social", "Nome Fantasia", "CNPJ", "I.E", "Tipo de Organização", "Cep", "Endereço", "Número", "Complemento",
@@ -44,7 +45,10 @@ export function montarLinha({ loja, dados, segredos, cfg, cscSP }: OnboardingInp
   if (!own && loja.uf === "MG" && !csc.hom_id) { csc.hom_id = csc.prod_id; csc.hom_token = csc.prod_token; }
 
   const xml = [O.email_xml, O.xml_incluir_email_loja ? loja.email_loja : "", O.xml_incluir_contador ? dados.contador_email : ""]
-    .map((e) => (e ?? "").trim()).filter(Boolean);
+    .map((e) => (e ?? "").trim()).filter((e) => e && isValidEmail(e));
+  // Franquia: a resposta do formulário vale quando bate com a lista do Nexaas; senão, o padrão da configuração.
+  const doForm = (campo: keyof typeof LISTAS) => (!own && O.preferir_respostas_formulario ? casarComLista(dados[campo], LISTAS[campo]) : null);
+  const escrit = doForm("escrituracao") ?? (regime ? O.escrituracao_por_regime[regime] ?? "" : "");
   const pick = (loja_: string | undefined, padrao: string) => (loja_ ?? "").trim() || padrao.trim();
 
   const v: Record<string, string | undefined> = {
@@ -77,11 +81,11 @@ export function montarLinha({ loja, dados, segredos, cfg, cscSP }: OnboardingInp
     "CSC Token Homologação": csc.hom_token,
     "Série NFC-e (Contingência)": D.serie_nfce_cont,
     "Série NF-e (Contingência)": D.serie_nfe_cont,
-    "Natureza Jurídica": O.natureza,
-    "Indicador de Atividade": O.indicador,
-    "Período": O.periodo,
-    "Receita": O.receita,
-    "Escrituração": regime ? O.escrituracao_por_regime[regime] ?? "" : "",
+    "Natureza Jurídica": doForm("natureza") ?? O.natureza,
+    "Indicador de Atividade": doForm("indicador") ?? O.indicador,
+    "Período": doForm("periodo") ?? O.periodo,
+    "Receita": doForm("receita") ?? O.receita,
+    "Escrituração": escrit,
     "E-mail (Recebimento XML)": xml.join(", "), // o comentário do modelo pede e-mails separados por vírgula
     "Períodicidade XML": O.periodicidade_xml,
   };

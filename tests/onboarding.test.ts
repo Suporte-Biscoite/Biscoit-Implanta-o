@@ -24,6 +24,13 @@ describe("planilha de onboarding (critério 2)", () => {
     expect(linha["Tipo de Organização"]).toBe("Franquia");
     expect(pendentes.sort()).toEqual(["Dias para expirar cupons", "ID Externo", "Vendedor Padrão"]);
   });
+  it("franquia: respostas contábeis válidas do formulário prevalecem; inválidas caem no padrão", async () => {
+    const dados = { ...DADOS_COMPLETOS, regime: "Lucro Presumido", escrituracao: "B", receita: "regime de caixa", natureza: "não sei" };
+    const { linha } = await gerarOnboardingXlsx({ loja: { tipo: "FRANQUIA", nome: "B", cnpj: CNPJ_FICTICIO, uf: "SP", email_loja: null }, dados, segredos: SEG_COMPLETOS, cfg: CFG, cscSP: null });
+    expect(linha["Escrituração"]).toBe("B - RESUMIDO");          // veio do formulário
+    expect(linha["Receita"]).toBe("1 - REGIME DE CAIXA");         // veio do formulário
+    expect(linha["Natureza Jurídica"]).toBe("2062 - Sociedade Empresária Limitada"); // resposta inválida → padrão
+  });
   it("loja própria em SP usa CSC fixo; fora de SP fica PENDENTE", async () => {
     const own = { tipo: "PROPRIA" as const, nome: "BISCOITE PROPRIA", cnpj: CNPJ_FICTICIO, email_loja: null };
     const sp = await gerarOnboardingXlsx({ loja: { ...own, uf: "SP" }, dados: DADOS_COMPLETOS, segredos: {}, cfg: CFG, cscSP });

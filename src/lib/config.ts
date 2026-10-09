@@ -11,19 +11,21 @@ export type AppConfig = {
   onboarding: {
     natureza: string; indicador: string; periodo: string; receita: string; periodicidade_xml: string;
     email_xml: string; xml_incluir_email_loja: boolean; xml_incluir_contador: boolean;
+    /** Franquia: usar Natureza/Indicador/Período/Receita/Escrituração respondidos no formulário quando batem com a lista. */
+    preferir_respostas_formulario: boolean;
     escrituracao_por_regime: Record<string, string>;
     padroes: { id_externo: string; vendedor: string; dias_cupom: string; raio: string; serie_nfe: string; seq_nfe: string; serie_nfce: string; seq_nfce: string; terminais: string; serie_nfce_cont: string; serie_nfe_cont: string };
   };
   links: { formulario: string; respostas_sheet_id: string; respostas_aba: string; pipeline_sheet_id: string; pipeline_aba: string };
-  pipeline_colunas: { nome: string; cnpj: string; inauguracao: string; tipo: string; uf: string };
+  pipeline_colunas: { nome: string; cnpj: string; inauguracao: string; previsao: string; tipo: string; uf: string };
   respostas_mapeamento: Record<string, string>;
   saudacoes: { nome_destinatario: string; manha: string; tarde: string; noite: string; hora_tarde: number; hora_noite: number };
   mensagem_formulario: string;
   retencao_meses: number;
 };
 
-// Cabeçalhos ESPERADOS da planilha de respostas, baseados nos campos do manual (seção 2.3).
-// Ajustar na tela de configuração depois de rodar `npm run sheets:headers` (Passo 0).
+// Cabeçalhos REAIS da planilha "Contratação do Sistema Nexaas (respostas)", lidos em 09/10/2026.
+// A coluna "Senha" (senha do certificado) NUNCA é mapeada — e o leitor ignora qualquer coluna de senha.
 export const DEFAULT_MAPEAMENTO: Record<string, string> = {
   email_franqueado: "Endereço de e-mail",
   nome_fantasia: "Nome Fantasia",
@@ -31,7 +33,7 @@ export const DEFAULT_MAPEAMENTO: Record<string, string> = {
   razao_social: "Razão Social",
   contrato_link: "Contrato Social",
   ie: "I.E.",
-  regime: "Regime Tributário",
+  regime: "Regime tributário", // no formulário há um espaço no fim; a comparação ignora
   logradouro: "Logradouro",
   numero: "Número",
   complemento: "Complemento",
@@ -51,8 +53,13 @@ export const DEFAULT_MAPEAMENTO: Record<string, string> = {
   csc_prod_token: "CSC Produção",
   csc_hom_id: "ID CSC Homol.",
   csc_hom_token: "CSC Homologação",
-  email_loja: "E-mail Loja/Quiosque",
+  email_loja: "E-mail Loja/Quisoque", // grafia exata do formulário
   contador_email: "Contabilidade",
+  natureza: "Natureza Jurídica",
+  indicador: "Indicador de Atividade",
+  periodo: "Período",
+  receita: "Receita",
+  escrituracao: "Escrituração",
 };
 
 export const DEFAULTS: AppConfig = {
@@ -68,6 +75,7 @@ export const DEFAULTS: AppConfig = {
     email_xml: "",
     xml_incluir_email_loja: false,
     xml_incluir_contador: false,
+    preferir_respostas_formulario: true,
     escrituracao_por_regime: {
       "1 - SIMPLES": "C - SIMPLES NACIONAL",
       "2 - SIMPLES - SUBLIMITE": "C - SIMPLES NACIONAL",
@@ -78,7 +86,8 @@ export const DEFAULTS: AppConfig = {
     padroes: { id_externo: "", vendedor: "", dias_cupom: "", raio: "", serie_nfe: "", seq_nfe: "", serie_nfce: "", seq_nfce: "", terminais: "", serie_nfce_cont: "", serie_nfe_cont: "" },
   },
   links: { formulario: "", respostas_sheet_id: "", respostas_aba: "", pipeline_sheet_id: "", pipeline_aba: "" },
-  pipeline_colunas: { nome: "", cnpj: "", inauguracao: "Coluna H", tipo: "", uf: "" },
+  // Cabeçalhos reais do arquivo "BASE DE LOJAS DA REDE E IMPLANTAÇÕES.xlsx" (linha 3), lidos em 09/10/2026.
+  pipeline_colunas: { nome: "LOJA", cnpj: "CNPJ", inauguracao: "INAUGURAÇÃO", previsao: "PREVISÃO INAUGURAÇÃO", tipo: "PRÓPRIA| FRANQUEADO", uf: "ES" },
   respostas_mapeamento: DEFAULT_MAPEAMENTO,
   saudacoes: { nome_destinatario: "Andrei", manha: "Bom dia", tarde: "Boa tarde", noite: "Boa noite", hora_tarde: 12, hora_noite: 18 },
   mensagem_formulario:

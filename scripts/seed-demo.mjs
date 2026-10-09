@@ -23,8 +23,8 @@ const sufixo = String(Date.now()).slice(-6);
 
 await call("/api/config", "PUT", { chave: "emails", valor: {
   FRANQUIA: { para: ["implantacao@fornecedor.exemplo"], cc: ["cs@fornecedor.exemplo", "juridico@fornecedor.exemplo", "ti@empresa.exemplo"] },
-  PROPRIA: { para: ["implantacao@fornecedor.exemplo"], cc: ["cs@fornecedor.exemplo", "financeiro@empresa.exemplo", "ti@empresa.exemplo", "responsavel@empresa.exemplo"] } } });
-await call("/api/config", "PUT", { chave: "propria_padrao", valor: { razao_social: "EMPRESA FICTICIA DE ALIMENTOS LTDA", regime: "3 - PRESUMIDO", resp_nome: "Fulano de Tal Exemplo", resp_email: "responsavel@empresa.exemplo", resp_telefone: "11 90000-0000", resp_doc_link: "https://drive.google.com/file/d/DOC-FICTICIO", financeiro: "A/C Beltrano Exemplo | Controladoria | financeiro@empresa.exemplo | Rua Fictícia, 100 - São Paulo/SP - CEP 01000-000", ponto_focal: "11 90000-0000" } });
+  PROPRIA: { para: ["contato@fornecedor.exemplo"], cc: ["andrei@fornecedor.exemplo", "cs@fornecedor.exemplo", "testemunha@empresa.exemplo", "ti@empresa.exemplo", "implantacao@fornecedor.exemplo", "financeiro@fornecedor.exemplo"] } } });
+await call("/api/config", "PUT", { chave: "propria_padrao", valor: { razao_social: "EMPRESA FICTICIA DE ALIMENTOS LTDA", regime: "3 - PRESUMIDO", resp_nome: "Fulano de Tal Exemplo", resp_email: "responsavel@empresa.exemplo", resp_telefone: "11 90000-0000", resp_doc_link: "https://drive.google.com/file/d/DOC-FICTICIO", financeiro: "A/C BELTRANO EXEMPLO\nCargo: CONTROLADORIA\nEndereço: Rua Fictícia, 100, Centro, São Paulo/SP -\nCEP: 01.000-000\n\nfinanceiro@empresa.exemplo", ponto_focal: "11 90000-0000" } });
 await call("/api/config", "PUT", { chave: "testemunha", valor: { nome: "Ciclana Testemunha Exemplo", email: "testemunha@empresa.exemplo", endereco: "Rua Fictícia, 100 - São Paulo/SP - 01000-000", telefone: "11 91111-1111" } });
 await call("/api/config", "PUT", { chave: "links", valor: { formulario: "https://docs.google.com/forms/d/FORMULARIO-FICTICIO/viewform" } });
 await call("/api/config", "PUT", { chave: "onboarding", valor: { email_xml: "xml@empresa.exemplo", padroes: { serie_nfe: "2", seq_nfe: "0", serie_nfce: "1", seq_nfce: "0", terminais: "2", raio: "Sem Limite" } } });
@@ -33,7 +33,7 @@ await call("/api/config/segredo", "PUT", { chave: "testemunha_cpf", valor: cpf("
 await call("/api/config/segredo", "PUT", { chave: "csc_sp", valor: { prod_id: "000001", prod_token: "FICTICIO-PROD-0000-0000-000000000001", hom_id: "000001", hom_token: "FICTICIO-HOMO-0000-0000-000000000002" } });
 
 const p = await call("/api/lojas", "POST", { tipo: "PROPRIA", nome: "BISCOITE SHOPPING EXEMPLO", uf: "SP", cnpj: cnpj(`12${sufixo}0001`), email_loja: "shoppingexemplo@biscoite.com.br", data_inauguracao: dia(12),
-  dados: { ie: ie("1112223334"), logradouro: "Avenida Fictícia", numero: "500", complemento: "Loja 10", bairro: "Bairro Exemplo", cep: "01001000", cidade: "São Paulo", contrato_link: "https://drive.google.com/file/d/CONTRATO-FICTICIO" } });
+  dados: { nome_exibicao: "Shopping Exemplo São João", ie: ie("1112223334"), logradouro: "Avenida Fictícia", numero: "500", complemento: "Loja 10", bairro: "Bairro Exemplo", cep: "01001000", cidade: "São Paulo", contrato_link: "https://drive.google.com/file/d/CONTRATO-FICTICIO" } });
 for (const e of ["cnpj"]) await call(`/api/lojas/${p.id}/etapas`, "PATCH", { etapa: e, status: "CONCLUIDO" });
 await call(`/api/lojas/${p.id}/etapas`, "PATCH", { etapa: "email_nexaas", status: "EM_ANDAMENTO" });
 const f = await call("/api/lojas", "POST", { tipo: "FRANQUIA", nome: "BISCOITE RUA DAS FLORES", uf: "PR", cnpj: cnpj(`55${sufixo}0001`), email_loja: "ruadasflores@biscoite.com", data_inauguracao: dia(26),

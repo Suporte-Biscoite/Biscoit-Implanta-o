@@ -9,7 +9,7 @@
     "start": "next start",
     "migrate": "node scripts/migrate.mjs",
     "test": "vitest run",
-    "sheets:headers": "node scripts/sheets-headers.mjs",
+    "sheets:headers": "node --experimental-strip-types scripts/sheets-headers.mjs",
     "make-template": "node scripts/make-template.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "test:security": "node scripts/security-test.mjs",

@@ -5,11 +5,11 @@ import { api } from "./api";
 type Cfg = Record<string, unknown>;
 const SECOES: { chave: string; titulo: string; ajuda: string }[] = [
   { chave: "emails", titulo: "Destinatários do e-mail ao Nexaas", ajuda: "Listas por tipo. Repasse para própria usa PROPRIA; repasse entre franquias usa FRANQUIA. Lembre de incluir o responsável legal no CC da própria." },
-  { chave: "propria_padrao", titulo: "Padrões das lojas próprias", ajuda: "Razão social, regime (ex.: 3 - PRESUMIDO), responsável legal, contato financeiro (com endereço) e ponto focal." },
+  { chave: "propria_padrao", titulo: "Padrões das lojas próprias", ajuda: "Razão social, regime (ex.: 3 - PRESUMIDO), responsável legal, contato financeiro e ponto focal. Para quebrar linha (como no e-mail real do contato financeiro), escreva \\n dentro do texto — ex.: \"A/C NOME\\nCargo: CONTROLADORIA\\n\\nemail@...\"." },
   { chave: "testemunha", titulo: "Testemunha dos contratos", ajuda: "O CPF é gravado à parte, cifrado (abaixo)." },
   { chave: "onboarding", titulo: "Campos fixos e padrões do onboarding", ajuda: "Valores precisam ser idênticos às listas da planilha do Nexaas. Padrões vazios saem como PENDENTE." },
-  { chave: "links", titulo: "Links e planilhas", ajuda: "Use o ID da planilha (o trecho entre /d/ e /edit da URL) e o nome da aba (vazio = primeira aba)." },
-  { chave: "pipeline_colunas", titulo: "Colunas do pipeline", ajuda: 'Nome exato do cabeçalho, ou "Coluna H" para indicar pela letra.' },
+  { chave: "links", titulo: "Links e planilhas", ajuda: "Use o ID do arquivo (o trecho entre /d/ e /edit ou /view da URL) e o nome da aba (vazio = primeira aba). Aceita planilha Google e .xlsx guardado no Drive (o pipeline é .xlsx)." },
+  { chave: "pipeline_colunas", titulo: "Colunas do pipeline", ajuda: 'Nome exato do cabeçalho (a linha do cabeçalho é encontrada sozinha), ou "Coluna H" para indicar pela letra. "previsao" é usada quando "inauguracao" estiver vazia ou com "-".' },
   { chave: "respostas_mapeamento", titulo: "Mapeamento do formulário", ajuda: "campo do sistema → cabeçalho da planilha de respostas. Ajuste após rodar npm run sheets:headers." },
   { chave: "saudacoes", titulo: "Saudações do e-mail", ajuda: "Horários de corte no fuso de São Paulo." },
   { chave: "mensagem_formulario", titulo: "Mensagem com o link do formulário", ajuda: "Use {loja} e {link}." },

@@ -23,6 +23,8 @@ export const DadosSchema = z.object({
   email_franqueado: optTxt(254), contador_email: optTxt(254), telefone_loja: optTxt(20),
   id_externo: optTxt(40), vendedor: optTxt(80), dias_cupom: optTxt(5), raio: optTxt(20),
   serie_nfe: optTxt(5), seq_nfe: optTxt(12), serie_nfce: optTxt(5), seq_nfce: optTxt(12), terminais: optTxt(4),
+  nome_exibicao: optTxt(80),
+  natureza: optTxt(150), indicador: optTxt(150), periodo: optTxt(60), receita: optTxt(60), escrituracao: optTxt(60),
 }).strict();
 
 export const SegredosSchema = z.object(

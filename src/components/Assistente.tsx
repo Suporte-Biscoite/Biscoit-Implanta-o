@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { api, ApiError } from "./api";
+import { sugerirNomeExibicao } from "@/lib/domain";
 
 type Tipo = "FRANQUIA" | "PROPRIA" | "REPASSE_FF" | "REPASSE_FP";
 const TIPOS: { v: Tipo; t: string; d: string }[] = [
@@ -18,6 +19,9 @@ export function Assistente() {
   const [f, setF] = useState({ nome: "", email_loja: "", uf: "SP", cnpj: "", sem_cnpj: false, data_inauguracao: "", observacoes: "" });
   const [d, setD] = useState({ razao_social: "", ie: "", logradouro: "", numero: "", complemento: "", bairro: "", cep: "", cidade: "", contrato_link: "" });
   const [rgLink, setRgLink] = useState("");
+  const [exibicao, setExibicao] = useState("");
+  const [exibicaoEditada, setExibicaoEditada] = useState(false);
+  const exib = exibicaoEditada ? exibicao : sugerirNomeExibicao(f.nome);
   const [pipe, setPipe] = useState<{ msg?: string; matches?: Match[] }>({});
   const [erro, setErro] = useState<string | null>(null);
   const [erros, setErros] = useState<{ campo: string; msg: string }[]>([]);
@@ -54,7 +58,7 @@ export function Assistente() {
   async function salvar() {
     setSalvando(true); setErro(null); setErros([]);
     try {
-      const dados = propria ? Object.fromEntries(Object.entries(d).filter(([, v]) => v.trim())) : {};
+      const dados = { ...(propria ? Object.fromEntries(Object.entries(d).filter(([, v]) => v.trim())) : {}), ...(exib.trim() ? { nome_exibicao: exib.trim() } : {}) };
       const r = await api<{ id: string }>("/api/lojas", "POST", {
         tipo, ...f, cnpj: f.sem_cnpj ? "" : f.cnpj, email_loja: f.email_loja || undefined, dados,
         segredos: propria && rgLink.trim() ? { resp_doc_link: rgLink.trim() } : {},
@@ -90,6 +94,7 @@ export function Assistente() {
         <div className="cartao">
           <div className="grade">
             <div className="campo"><label htmlFor="nome">Nome da loja (fica em MAIÚSCULO)</label><input id="nome" value={f.nome} onChange={set("nome")} placeholder="BISCOITE SHOPPING EXEMPLO" maxLength={120} /></div>
+            <div className="campo"><label htmlFor="exib">Nome no e-mail (com acentos, ex.: União Osasco)</label><input id="exib" value={exib} onChange={(e) => { setExibicaoEditada(true); setExibicao(e.target.value); }} maxLength={80} /></div>
             <div className="campo"><label htmlFor="email">E-mail da loja ({dominio})</label><input id="email" type="email" value={f.email_loja} onChange={set("email_loja")} placeholder={`loja${dominio}`} /></div>
             <div className="campo"><label htmlFor="uf">UF</label><select id="uf" value={f.uf} onChange={set("uf")}>{UFS.map((u) => <option key={u}>{u}</option>)}</select></div>
             <div className="campo"><label htmlFor="cnpj">CNPJ</label><input id="cnpj" value={f.cnpj} onChange={set("cnpj")} disabled={f.sem_cnpj} inputMode="numeric" placeholder="00.000.000/0000-00" /></div>
@@ -144,6 +149,7 @@ export function Assistente() {
           <table><tbody>
             <tr><th>Tipo</th><td>{TIPOS.find((t) => t.v === tipo)?.t}</td></tr>
             <tr><th>Nome</th><td>{f.nome.toUpperCase()}</td></tr>
+            <tr><th>Nome no e-mail</th><td>{exib || "—"} <span className="sub">(assunto: Implantação Nexaas - {exib})</span></td></tr>
             <tr><th>E-mail</th><td>{f.email_loja || "—"}</td></tr>
             <tr><th>UF</th><td>{f.uf}</td></tr>
             <tr><th>CNPJ</th><td>{f.sem_cnpj ? "Ainda não tem (Aguardando CNPJ)" : f.cnpj}</td></tr>

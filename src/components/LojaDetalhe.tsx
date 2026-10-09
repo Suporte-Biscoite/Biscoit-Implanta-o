@@ -14,10 +14,11 @@ type Detalhe = {
 type Email = { assunto: string; para: string[]; cc: string[]; html: string; texto: string; faltando: string[] };
 
 const ROTULOS: Record<string, string> = {
-  razao_social: "Razão social", ie: "Inscrição Estadual", regime: "Regime tributário", logradouro: "Logradouro", numero: "Número",
+  nome_exibicao: "Nome no e-mail (com acentos)", razao_social: "Razão social", ie: "Inscrição Estadual", regime: "Regime tributário", logradouro: "Logradouro", numero: "Número",
   complemento: "Complemento", bairro: "Bairro", cep: "CEP", cidade: "Cidade", contrato_link: "Contrato social / Cartão CNPJ (link)",
   resp_nome: "Responsável legal", resp_email: "E-mail do responsável", financeiro: "Contato financeiro", ponto_focal: "Ponto focal",
   telefone_loja: "Telefone da loja", contador_email: "E-mail da contabilidade",
+  natureza: "Natureza jurídica (formulário)", indicador: "Indicador de atividade (formulário)", periodo: "Período (formulário)", receita: "Receita (formulário)", escrituracao: "Escrituração (formulário)",
   id_externo: "ID Externo", vendedor: "Vendedor padrão", dias_cupom: "Dias p/ expirar cupons", raio: "Raio máximo (Sem Limite, 30KM, 60KM, 100KM)",
   serie_nfe: "Série NF-e", seq_nfe: "Últ. sequencial NF-e", serie_nfce: "Série NFC-e", seq_nfce: "Últ. sequencial NFC-e", terminais: "Qtde de terminais",
 };
@@ -124,7 +125,7 @@ function Dados({ d, fluxo, pode, recarregar, onOk, onErro, papel }: { d: Detalhe
     if (!confirm(`Excluir a loja ${d.loja.nome}? (exclusão lógica — o administrador consegue recuperar pelo banco)`)) return;
     try { await api(`/api/lojas/${d.loja.id}`, "DELETE"); window.location.href = "/"; } catch (e) { onErro(e); }
   }
-  const campos = fluxo === "PROPRIA" ? ["razao_social", "ie", "logradouro", "numero", "complemento", "bairro", "cep", "cidade", "contrato_link", "telefone_loja", "id_externo", "vendedor", "dias_cupom", "raio", "serie_nfe", "seq_nfe", "serie_nfce", "seq_nfce", "terminais"] : Object.keys(ROTULOS);
+  const campos = fluxo === "PROPRIA" ? ["nome_exibicao", "razao_social", "ie", "logradouro", "numero", "complemento", "bairro", "cep", "cidade", "contrato_link", "telefone_loja", "id_externo", "vendedor", "dias_cupom", "raio", "serie_nfe", "seq_nfe", "serie_nfce", "seq_nfce", "terminais"] : Object.keys(ROTULOS);
   const sens = fluxo === "PROPRIA" ? ["resp_doc_link"] : Object.keys(SENS);
   return (
     <div className="cartao">

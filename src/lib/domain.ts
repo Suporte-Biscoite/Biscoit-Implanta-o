@@ -19,6 +19,10 @@ export type DadosLoja = Partial<{
   certificado_recebido: boolean;
   email_franqueado: string; contador_email: string; telefone_loja: string;
   cnpj_formulario: string; nome_formulario: string;
+  /** Nome curto com acentos para o assunto e o texto do e-mail (ex.: "União Osasco"). */
+  nome_exibicao: string;
+  // respostas contábeis do formulário (franquia)
+  natureza: string; indicador: string; periodo: string; receita: string; escrituracao: string;
   // sobreposições por loja dos campos de onboarding
   id_externo: string; vendedor: string; dias_cupom: string; raio: string;
   serie_nfe: string; seq_nfe: string; serie_nfce: string; seq_nfce: string; terminais: string;
@@ -37,6 +41,13 @@ export type Loja = {
   cnpj: string | null; sem_cnpj: boolean; data_inauguracao: string | null; observacoes: string | null;
   dados: DadosLoja; form_sincronizado_em: string | null; criado_em: string;
 };
+
+/** Sugestão de nome de exibição: tira "BISCOITE" e coloca em formato de título. Acentos precisam de ajuste manual. */
+export function sugerirNomeExibicao(nome: string): string {
+  const menores = new Set(["de", "da", "do", "das", "dos", "e", "a", "o"]);
+  return nome.replace(/^\s*biscoit[eê]\s+/i, "").toLowerCase().split(/\s+/).filter(Boolean)
+    .map((p, i) => (i > 0 && menores.has(p) ? p : p.charAt(0).toUpperCase() + p.slice(1))).join(" ");
+}
 
 export type Etapa = { key: string; titulo: string; dica?: string };
 export const CHECKLIST: Record<"FRANQUIA" | "PROPRIA", Etapa[]> = {

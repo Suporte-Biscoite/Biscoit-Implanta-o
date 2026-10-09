@@ -105,15 +105,27 @@ Regras: `.env*` nunca vai para o git (já está no `.gitignore`); `npm run scan:
    marque *Permitir* e *Aplicação obrigatória* para a unidade organizacional do time de TI (de preferência com chave de segurança ou app autenticador).
 
 ### 4.2 Leitura das planilhas (somente leitura, sem chave em arquivo)
-1. Ative a **Google Sheets API** no projeto.
+O sistema lê os arquivos **pela API do Drive**, porque o pipeline (`BASE DE LOJAS DA REDE E IMPLANTAÇÕES.xlsx`) é um
+**arquivo .xlsx guardado no Drive**, não uma planilha Google — e a API do Sheets não lê .xlsx. A planilha de respostas
+(planilha Google) é exportada como .xlsx na hora. Nos dois casos, só leitura.
+
+1. Ative a **Google Drive API** no projeto.
 2. Crie uma conta de serviço sem nenhum papel: `implantacao-app@PROJETO.iam.gserviceaccount.com`.
-3. Nas planilhas de **respostas** e do **pipeline**: Compartilhar → cole o e-mail da conta de serviço → **Leitor**. Não compartilhe mais nada com ela.
-4. No Cloud Run, use essa conta como **identidade do serviço**: o app lê as planilhas sem nenhum arquivo de chave (nada para vazar nem rotacionar).
-5. **Passo 0 — mapeamento:** rode `npm run sheets:headers <ID_RESPOSTAS> <ID_PIPELINE>`. Ele imprime **só a linha de cabeçalho**.
-   Depois ajuste, em **Configurações**, os blocos *Mapeamento do formulário* e *Colunas do pipeline*.
+3. Compartilhe **somente os dois arquivos** com o e-mail da conta de serviço, como **Leitor**:
+   a planilha de respostas e o arquivo .xlsx do pipeline. Não compartilhe pastas.
+   O escopo é `drive.readonly`, mas a conta de serviço só enxerga o que foi compartilhado com ela.
+4. No Cloud Run, use essa conta como **identidade do serviço**: nenhum arquivo de chave (nada para vazar nem rotacionar).
+5. **Passo 0 — já feito em 09/10/2026:** os cabeçalhos reais estão na configuração padrão
+   (ver `docs/MAPEAMENTO_E_SUPOSICOES.md`). Se o formulário ou o pipeline mudarem de colunas, rode
+   `npm run sheets:headers <ID_RESPOSTAS> <ID_PIPELINE>` — imprime **só a linha de cabeçalho** de cada aba — e ajuste em **Configurações**.
    Para rodar no seu computador: `gcloud auth application-default login --impersonate-service-account=implantacao-app@PROJETO.iam.gserviceaccount.com`
    (seu usuário precisa do papel *Criador de token da conta de serviço* nessa conta).
-6. Em **Configurações → Links e planilhas**, preencha `respostas_sheet_id` e `pipeline_sheet_id` (o trecho entre `/d/` e `/edit` da URL).
+6. Em **Configurações → Links e planilhas**, preencha `respostas_sheet_id` e `pipeline_sheet_id` com o ID de cada arquivo
+   (o trecho entre `/d/` e `/edit` ou `/view` da URL). `pipeline_aba` vazio = primeira aba.
+
+> ⚠️ A planilha de respostas tem uma coluna **"Senha"** (senha do certificado digital, em texto aberto).
+> O sistema **nunca lê** colunas de senha (há trava no código e teste automático). Recomendo ao time limitar quem
+> acessa essa planilha e apagar as senhas antigas depois que o Nexaas configurar o certificado.
 
 ## 5. Deploy no Google Cloud
 
@@ -193,4 +205,4 @@ O CI (`.github/workflows/ci.yml`) roda tudo isso a cada push, mais o gitleaks.
 - [ ] Cópia offline da `FIELD_ENCRYPTION_KEYS` e da chave privada GPG, em locais diferentes
 - [ ] Configurações preenchidas (destinatários, padrões das próprias, testemunha, CSC de SP)
 - [ ] Remover os tokens CSC do manual de implantação (hoje estão em texto aberto no documento)
-- [ ] Comparar um e-mail gerado com o print real do e-mail ao Nexaas, lado a lado
+- [x] Comparar um e-mail gerado com o print real do e-mail ao Nexaas, lado a lado (feito em 09/10/2026)

@@ -1,16 +1,16 @@
 # Relatório de testes — Fase 1
 
-Data: 09/10/2026 · Código final da Fase 1 · Ambiente: Ubuntu 24.04, Node 22, PostgreSQL 16, app em **modo produção**.
+Data: 09/10/2026 (2ª rodada, após o print do e-mail real e a leitura das planilhas) · Código final da Fase 1 · Ambiente: Ubuntu 24.04, Node 22, PostgreSQL 16, app em **modo produção**.
 Todos os dados usados são **fictícios** (CNPJ/CPF/I.E. gerados pelos algoritmos).
 
 ## Resumo
 | Verificação | Resultado |
 |---|---|
 | Tipagem (TypeScript estrito) | ✅ sem erros |
-| Testes unitários | ✅ **32/32** (9 arquivos) |
+| Testes unitários | ✅ **44/44** (10 arquivos) |
 | Dependências (`npm audit`) | ✅ 0 vulnerabilidades |
 | Segredos/dados pessoais no código (`scan:secrets`) | ✅ nenhum achado |
-| Dados reais dos anexos no repositório | ✅ 0 ocorrências (CNPJs, I.E., tokens CSC, telefones, 18 e-mails, nomes) |
+| Dados reais dos anexos e do print no repositório | ✅ 0 ocorrências (CNPJs, I.E., CPFs, tokens CSC, links do Drive, telefones, 18 e-mails, nomes) |
 | Build de produção | ✅ |
 | Segurança de ponta a ponta (seção D) | ✅ **40/40** |
 | Backup cifrado + restauração | ✅ dados idênticos em 6 tabelas + dado sensível decifrado do banco restaurado |
@@ -19,7 +19,7 @@ Todos os dados usados são **fictícios** (CNPJ/CPF/I.E. gerados pelos algoritmo
 ## Critérios de aceite
 | # | Critério | Situação |
 |---|---|---|
-| 1 | E-mail com a mesma estrutura e campos do real | ✅ assunto, saudação por horário, 2 frases e tabela de 16 campos na ordem pedida (teste `email.test.ts`). ⚠️ **Falta a comparação lado a lado com o print real**, que não chegou. |
+| 1 | E-mail com a mesma estrutura e campos do real | ✅ **comparado lado a lado com o print real**: assunto e texto com o nome de exibição ("União Osasco"), nome em MAIÚSCULO na tabela, 16 rótulos idênticos (inclusive os pontos finais), endereço em 3 linhas, contato financeiro em várias linhas, frase da inauguração sem ponto, azul claro e bordas pretas. Diferença intencional: CPF da testemunha formatado. |
 | 2 | .xlsx abre no Excel e no Sheets, com validações e 36 colunas | ✅ 36 colunas e 9 validações preservadas (aba Planilha3), abre no LibreOffice e openpyxl. ⚠️ **Não testei no Excel nem no Google Sheets** (indisponíveis aqui) — conferir ao receber. |
 | 3 | Formulário incompleto → pendências exatas + mensagem | ✅ `pendencias.test.ts` (6 pendências esperadas, mensagem numerada, sem ecoar valores) |
 | 4 | CNPJ/CPF inválidos rejeitados; sem CNPJ bloqueado | ✅ unitários + segurança (400 / 409) |
@@ -72,23 +72,24 @@ Todos os dados usados são **fictícios** (CNPJ/CPF/I.E. gerados pelos algoritmo
 
 ## Restauração (saída do `npm run test:restore`)
 ```
-1) Backup gerado e cifrado: implantacao-diario-20261009T145853Z.dump.gpg
+1) Backup gerado e cifrado: implantacao-diario-20261009T151152Z.dump.gpg
 2) Arquivo está cifrado (GPG) — OK
 3) Conteúdo ilegível sem a chave privada — OK
 4) Restaurado no banco de teste
 5) Comparação origem x restaurado (tabela|linhas|hash):
-stores|2|173fa6bca9be89e1e36d8a1378a2fb47 => stores|2|173fa6bca9be89e1e36d8a1378a2fb47
-store_steps|22|22afdb4ef65d3996b1a34dc39ad44573 => store_steps|22|22afdb4ef65d3996b1a34dc39ad44573
-store_events|5|d4d3b9163f6b916a5751216e23a7a8fd => store_events|5|d4d3b9163f6b916a5751216e23a7a8fd
-audit_log|75|13c7529a8609e572f14994f78ea34556 => audit_log|75|13c7529a8609e572f14994f78ea34556
+stores|4|b50a78d627f2807592a24daf42bd82e6 => stores|4|b50a78d627f2807592a24daf42bd82e6
+store_steps|44|7c719a2b77b8aae31bd6541f4560151c => store_steps|44|7c719a2b77b8aae31bd6541f4560151c
+store_events|10|4d04ae0e3f00b2237c21d39b46d828ee => store_events|10|4d04ae0e3f00b2237c21d39b46d828ee
+audit_log|150|01188220ab099c91c82177205d7c277f => audit_log|150|01188220ab099c91c82177205d7c277f
 users|5|338107abca44a127133ac6b13cbff861 => users|5|338107abca44a127133ac6b13cbff861
 config|0| => config|0|
 6) Proteção de auditoria (triggers) restaurada — OK
-RESULTADO: RESTAURAÇÃO OK (2026-10-09T14:58:53Z)
-CPF decifrado do banco RESTAURADO (fictício, mascarado): ***.982.247-** | chave v1
+RESULTADO: RESTAURAÇÃO OK (2026-10-09T15:11:52Z)
 ```
 
 ## Problemas encontrados e corrigidos durante os testes
+0. **(2ª rodada) O pipeline é um .xlsx guardado no Drive**, não uma planilha Google: a API do Sheets falharia em produção → leitura pelo Drive + leitor de .xlsx próprio; cabeçalho detectado na linha 3; datas do Excel convertidas; "PREVISÃO INAUGURAÇÃO" como reserva.
+0b. **(2ª rodada) A planilha de respostas tem a senha do certificado em texto aberto** → o leitor ignora qualquer coluna de senha (trava + teste).
 1. **Next.js 14 com falhas críticas** (incl. execução remota de código) → atualizado para 15.5.27 + postcss corrigido.
 2. **Modelo do Nexaas com e-mails reais escondidos** num hyperlink interno e dados na linha 2 → modelo sanitizado (`npm run make-template`).
 3. **IP forjável** (primeiro valor do `X-Forwarded-For`) permitiria burlar o limite de requisições e falsear a auditoria → passa a usar o valor acrescentado pelo proxy confiável.
@@ -98,5 +99,5 @@ CPF decifrado do banco RESTAURADO (fictício, mascarado): ***.982.247-** | chave
 
 ## Limitações deste relatório
 - O login Google real não foi exercitado (sem rede para o Google aqui). As regras de autorização das claims têm teste unitário e o fluxo usa a biblioteca `openid-client`; teste o login uma vez em homologação.
-- A leitura real das planilhas não foi exercitada (sem acesso). A lógica de mapeamento e busca tem testes com planilhas simuladas.
+- Os cabeçalhos reais das duas planilhas foram lidos (09/10/2026) e estão na configuração padrão. A leitura completa pela conta de serviço não foi exercitada aqui; o leitor de .xlsx foi testado com uma planilha fictícia com a mesma estrutura do pipeline (cabeçalho na linha 3, datas do Excel).
 - O Dockerfile e o workflow de CI não foram executados aqui (sem Docker/GitHub neste ambiente).
